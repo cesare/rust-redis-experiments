@@ -4,5 +4,9 @@ version = "0.1.0"
 authors = ["SAWADA Tadashi <cesare@mayverse.jp>"]
 edition = "2018"
 
+[[bin]]
+name = "ping"
+path = "src/ping.rs"
+
 [dependencies]
 redis = { version = "~0.19.0", features = ["tokio-comp"] }
