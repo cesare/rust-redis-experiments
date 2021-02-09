@@ -1,13 +1,9 @@
-use redis::{Client, RedisError};
-use redis::aio::Connection;
+use redis::RedisError;
 
-async fn create_redis_connection() -> Result<Connection, RedisError> {
-    let client = Client::open("redis://127.0.0.1/")?;
-    client.get_async_connection().await
-}
+mod redis_client;
 
 async fn ping_request() -> Result<String, RedisError> {
-    let mut connection = create_redis_connection().await?;
+    let mut connection = redis_client::create_connection().await?;
     redis::cmd("PING").arg("hello")
         .query_async(&mut connection)
         .await
