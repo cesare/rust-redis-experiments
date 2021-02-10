@@ -8,6 +8,15 @@ edition = "2018"
 name = "ping"
 path = "src/ping.rs"
 
+[[bin]]
+name = "publish"
+path = "src/publish.rs"
+
+[[bin]]
+name = "subscribe"
+path = "src/subscribe.rs"
+
 [dependencies]
+futures-util = "~0.3.12"
 redis = { version = "~0.19.0", features = ["tokio-comp"] }
 tokio = { version = "~1.2", features = ["full"] }
