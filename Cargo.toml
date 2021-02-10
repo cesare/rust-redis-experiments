@@ -19,4 +19,5 @@ path = "src/subscribe.rs"
 [dependencies]
 futures-util = "~0.3.12"
 redis = { version = "~0.19.0", features = ["tokio-comp"] }
+structopt = "~0.3.21"
 tokio = { version = "~1.2", features = ["full"] }
