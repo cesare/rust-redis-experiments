@@ -1,4 +1,5 @@
 use futures_util::stream::StreamExt;
+use redis::Msg;
 use structopt::StructOpt;
 
 mod redis_client;
@@ -8,6 +9,12 @@ mod redis_client;
 struct SubscriptionConfig {
     #[structopt(short = "c", long = "channel", default_value = "channel-a")]
     channel: String,
+}
+
+async fn show_message(message: &Msg) -> Result<(), Box<dyn std::error::Error>> {
+    let payload: String = message.get_payload()?;
+    println!("Received message: {}", payload);
+    Ok(())
 }
 
 #[tokio::main]
@@ -20,8 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut stream = pubsub.on_message();
     while let Some(message) = stream.next().await {
-        let payload: String = message.get_payload()?;
-        println!("Received message: {}", payload);
+        show_message(&message).await?;
     }
 
     Ok(())
