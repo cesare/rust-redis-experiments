@@ -20,7 +20,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut stream = pubsub.on_message();
     while let Some(message) = stream.next().await {
-        println!("Receive message: {:?}", message);
+        let payload: String = message.get_payload()?;
+        println!("Received message: {}", payload);
     }
 
     Ok(())
