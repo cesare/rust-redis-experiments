@@ -39,12 +39,15 @@ impl TryFrom<Value> for Message {
     type Error = serde_json::Error;
 
     fn try_from(json: Value) -> Result<Self, Self::Error> {
-        if let Some(message_type) = json.get("message_type") {
-            if message_type == "text" {
-                return Ok(Message::Text(TextMessage::try_from(json)?))
-            }
+        if let Some(message_type) = json.get("message_type").and_then(|v| v.as_str()) {
+            let message = match message_type {
+                "text" => Message::Text(TextMessage::try_from(json)?),
+                _ => Message::Unknown(json)
+            };
+            Ok(message)
+        } else {
+            Ok(Message::Unknown(json))
         }
-        Ok(Message::Unknown(json))
     }
 }
 
