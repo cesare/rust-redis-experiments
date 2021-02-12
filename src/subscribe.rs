@@ -20,15 +20,6 @@ struct TextMessage {
     text: String,
 }
 
-impl TryFrom<Value> for TextMessage {
-    type Error = serde_json::Error;
-
-    fn try_from(json: Value) -> Result<Self, Self::Error> {
-        let text: TextMessage = serde_json::from_value(json)?;
-        Ok(text)
-    }
-}
-
 #[derive(Debug)]
 enum Message {
     Text(TextMessage),
@@ -41,7 +32,7 @@ impl TryFrom<Value> for Message {
     fn try_from(json: Value) -> Result<Self, Self::Error> {
         if let Some(message_type) = json.get("message_type").and_then(|v| v.as_str()) {
             let message = match message_type {
-                "text" => Message::Text(TextMessage::try_from(json)?),
+                "text" => Message::Text(serde_json::from_value(json)?),
                 _ => Message::Unknown(json)
             };
             Ok(message)
