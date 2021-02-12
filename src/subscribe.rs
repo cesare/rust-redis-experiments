@@ -1,7 +1,10 @@
 use futures_util::stream::StreamExt;
 use redis::Msg;
+use serde::Deserialize;
 use serde_json::Value;
 use structopt::StructOpt;
+
+use std::convert::TryFrom;
 
 mod redis_client;
 
@@ -12,10 +15,45 @@ struct SubscriptionConfig {
     channel: String,
 }
 
+#[derive(Deserialize, Debug)]
+struct TextMessage {
+    text: String,
+}
+
+impl TryFrom<Value> for TextMessage {
+    type Error = serde_json::Error;
+
+    fn try_from(json: Value) -> Result<Self, Self::Error> {
+        let text: TextMessage = serde_json::from_value(json)?;
+        Ok(text)
+    }
+}
+
+#[derive(Debug)]
+enum Message {
+    Text(TextMessage),
+    Unknown(Value),
+}
+
+impl TryFrom<Value> for Message {
+    type Error = serde_json::Error;
+
+    fn try_from(json: Value) -> Result<Self, Self::Error> {
+        if let Some(message_type) = json.get("message_type") {
+            if message_type == "text" {
+                return Ok(Message::Text(TextMessage::try_from(json)?))
+            }
+        }
+        Ok(Message::Unknown(json))
+    }
+}
+
 async fn show_message(message: &Msg) -> Result<(), Box<dyn std::error::Error>> {
     let payload: String = message.get_payload()?;
     if let Ok(json) = serde_json::from_str::<Value>(&payload) {
-        println!("Received message: {:?}", json);
+        if let Ok(msg) = Message::try_from(json) {
+            println!("{:?}", msg);
+        }
     } else {
         println!("Received non-JSON message: {}", payload);
     }
