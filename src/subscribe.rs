@@ -1,5 +1,6 @@
 use futures_util::stream::StreamExt;
 use redis::Msg;
+use serde_json::Value;
 use structopt::StructOpt;
 
 mod redis_client;
@@ -13,7 +14,12 @@ struct SubscriptionConfig {
 
 async fn show_message(message: &Msg) -> Result<(), Box<dyn std::error::Error>> {
     let payload: String = message.get_payload()?;
-    println!("Received message: {}", payload);
+    if let Ok(json) = serde_json::from_str::<Value>(&payload) {
+        println!("Received message: {:?}", json);
+    } else {
+        println!("Received non-JSON message: {}", payload);
+    }
+
     Ok(())
 }
 
